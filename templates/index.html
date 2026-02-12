@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- 系统介绍 -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                系统介绍
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">课堂教学行为识别系统</h5>
+                <p class="card-text">本系统旨在通过人工智能技术，自动识别和分析课堂教学中的各种行为，帮助教育工作者更好地理解教学过程，优化教学方法，提高教学质量。</p>
+                <p class="card-text">系统支持以下功能：</p>
+                <ul>
+                    <li><strong>数据上传：</strong>支持上传课堂教学视频和图片</li>
+                    <li><strong>数据标注：</strong>对上传的数据进行教学行为标注</li>
+                    <li><strong>模型训练：</strong>基于标注数据训练教学行为识别模型</li>
+                    <li><strong>模型评估：</strong>评估训练模型的性能</li>
+                    <li><strong>结果展示：</strong>展示模型识别结果和分析报告</li>
+                </ul>
+                <a href="{{ url_for('upload') }}" class="btn btn-primary">开始使用</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 系统状态 -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                系统状态
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">数据统计</h5>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        上传文件数
+                        <span class="badge bg-primary rounded-pill">{{ total_files }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        已标注文件数
+                        <span class="badge bg-success rounded-pill">{{ annotated_files }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        训练模型数
+                        <span class="badge bg-info rounded-pill">{{ total_models }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        最新模型准确率
+                        <span class="badge bg-warning rounded-pill">{{ latest_accuracy }}%</span>
+                    </li>
+                </ul>
+                
+                <!-- 清空数据按钮 -->
+                <div class="mt-4">
+                    <form method="post" action="{{ url_for('clear_data') }}" onsubmit="return confirm('确定要清空所有数据吗？此操作不可恢复！');">
+                        <button type="submit" class="btn btn-danger btn-block">一键清空数据</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 使用流程 -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                使用流程
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded-circle mx-auto mb-2" style="width: 80px; height: 80px;">
+                            <h3>1</h3>
+                        </div>
+                        <h6>数据上传</h6>
+                        <p class="text-muted">上传课堂教学视频或图片</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded-circle mx-auto mb-2" style="width: 80px; height: 80px;">
+                            <h3>2</h3>
+                        </div>
+                        <h6>数据标注</h6>
+                        <p class="text-muted">标注教学行为类型和相关信息</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded-circle mx-auto mb-2" style="width: 80px; height: 80px;">
+                            <h3>3</h3>
+                        </div>
+                        <h6>模型训练</h6>
+                        <p class="text-muted">基于标注数据训练识别模型</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="p-3 bg-light rounded-circle mx-auto mb-2" style="width: 80px; height: 80px;">
+                            <h3>4</h3>
+                        </div>
+                        <h6>结果分析</h6>
+                        <p class="text-muted">查看模型识别结果和分析报告</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

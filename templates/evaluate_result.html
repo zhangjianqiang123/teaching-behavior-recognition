@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                模型评估结果
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">评估模型：{{ model.model_name }}</h5>
+                <p class="card-text">数据文件：{{ data_file.filename }} ({{ data_file.file_type }})</p>
+                
+                <div class="alert alert-info" role="alert">
+                    <strong>总体准确率：</strong>{{ "%.2f"|format(overall_accuracy * 100) }}%
+                    <br>
+                    <strong>评估帧数：</strong>{{ frame_predictions|length }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 行为统计结果 -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                行为统计结果
+            </div>
+            <div class="card-body">
+                <p class="card-text">各教学行为出现次数统计：</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>教学行为</th>
+                                <th>出现次数</th>
+                                <th>占比</th>
+                                <th>准确率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for behavior, count in behavior_counts.items() %}
+                                <tr style="cursor: pointer;" onclick="showBehaviorFrames('{{ behavior }}')">
+                                    <td>{{ behaviors[behavior] }}</td>
+                                    <td>{{ count }}</td>
+                                    <td>{{ "%.2f"|format(count / frame_predictions|length * 100 if frame_predictions|length > 0 else 0) }}%</td>
+                                    <td>
+                                        {% if behavior_accuracies and behavior in behavior_accuracies %}
+                                            {% set acc_data = behavior_accuracies[behavior] %}
+                                            {% if acc_data.total > 0 %}
+                                                {{ "%.2f"|format(acc_data.accuracy * 100) }}%
+                                                <small class="text-muted">({{ acc_data.correct }}/{{ acc_data.total }})</small>
+                                            {% else %}
+                                                - (无数据)
+                                            {% endif %}
+                                        {% else %}
+                                            - (无数据)
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 图片展示模态框 -->
+<div class="modal fade" id="frameModal" tabindex="-1" aria-labelledby="frameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="frameModalLabel">帧图片展示</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 id="behaviorTitle"></h6>
+                        <div class="image-container position-relative">
+                            <img id="frameImage" src="" class="img-fluid" alt="Frame Image">
+                            <canvas id="annotationCanvas" class="position-absolute top-0 start-0 w-100 h-100"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <p><strong>帧索引：</strong><span id="frameIndex"></span></p>
+                            <p><strong>预测行为：</strong><span id="frameBehavior"></span></p>
+                            <p><strong>真实行为：</strong><span id="trueBehavior"></span></p>
+                            <p><strong>坐标：</strong><span id="frameCoordinates"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>该行为的所有帧</h6>
+                        <div class="frame-thumbnails overflow-auto" style="max-height: 400px;">
+                            <div id="frameThumbnails" class="row g-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 保存所有帧的预测结果
+var allFramePredictions = {{ frame_predictions | tojson }};
+var currentFrames = [];
+var currentIndex = 0;
+// 保存行为映射关系
+var behaviorMap = {{ behaviors | tojson }};
+
+// 当点击行为统计行时，显示该行为的所有帧
+function showBehaviorFrames(behavior) {
+    // 过滤出该行为的所有帧
+    currentFrames = allFramePredictions.filter(frame => frame.behavior === behavior);
+    currentIndex = 0;
+    
+    // 更新模态框标题
+    document.getElementById('behaviorTitle').textContent = `行为：${behaviorMap[behavior] || behavior}`;
+    
+    // 显示第一帧
+    if (currentFrames.length > 0) {
+        showFrame(0);
+    }
+    
+    // 生成缩略图
+    generateThumbnails();
+    
+    // 显示模态框
+    var frameModal = new bootstrap.Modal(document.getElementById('frameModal'));
+    frameModal.show();
+}
+
+// 显示指定索引的帧
+function showFrame(index) {
+    if (index < 0 || index >= currentFrames.length) return;
+    
+    var frame = currentFrames[index];
+    currentIndex = index;
+    
+    // 更新图片
+    var img = document.getElementById('frameImage');
+    img.src = frame.image_data;
+    
+    // 更新帧信息
+    document.getElementById('frameIndex').textContent = frame.frame_index;
+    document.getElementById('frameBehavior').textContent = behaviorMap[frame.behavior] || frame.behavior;
+    document.getElementById('trueBehavior').textContent = frame.true_behavior ? (behaviorMap[frame.true_behavior] || frame.true_behavior) : '无标注';
+    document.getElementById('frameCoordinates').textContent = frame.coordinates || '无标注';
+    
+    // 绘制标注框
+    img.onload = function() {
+        drawAnnotation(frame.coordinates);
+    };
+    
+    // 如果图片已经加载完成，直接绘制标注框
+    if (img.complete) {
+        drawAnnotation(frame.coordinates);
+    }
+}
+
+// 生成缩略图
+function generateThumbnails() {
+    var container = document.getElementById('frameThumbnails');
+    container.innerHTML = '';
+    
+    currentFrames.forEach((frame, index) => {
+        var col = document.createElement('div');
+        col.className = 'col-4';
+        
+        var thumbnail = document.createElement('div');
+        thumbnail.className = 'thumbnail-container cursor-pointer border p-1';
+        thumbnail.style.width = '100%';
+        thumbnail.style.height = '100px';
+        thumbnail.style.overflow = 'hidden';
+        thumbnail.onclick = function() { showFrame(index); };
+        
+        var img = document.createElement('img');
+        img.src = frame.image_data;
+        img.className = 'img-fluid h-100';
+        img.alt = `Frame ${index}`;
+        img.style.objectFit = 'contain';
+        
+        thumbnail.appendChild(img);
+        col.appendChild(thumbnail);
+        container.appendChild(col);
+    });
+}
+
+// 绘制标注框
+function drawAnnotation(coordinates) {
+    var canvas = document.getElementById('annotationCanvas');
+    var ctx = canvas.getContext('2d');
+    var img = document.getElementById('frameImage');
+    
+    // 调整canvas大小与图片一致
+    canvas.width = img.clientWidth;
+    canvas.height = img.clientHeight;
+    
+    // 清除画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 如果有坐标，绘制矩形
+    if (coordinates && coordinates.trim() !== '') {
+        try {
+            // 解析坐标，格式：x1,y1,x2,y2
+            var coords = coordinates.split(',').map(Number);
+            if (coords.length === 4) {
+                // 计算标注框在canvas中的位置（考虑图片缩放）
+                var imgWidth = img.naturalWidth;
+                var imgHeight = img.naturalHeight;
+                var scaleX = canvas.width / imgWidth;
+                var scaleY = canvas.height / imgHeight;
+                
+                var x1 = coords[0] * scaleX;
+                var y1 = coords[1] * scaleY;
+                var x2 = coords[2] * scaleX;
+                var y2 = coords[3] * scaleY;
+                
+                // 绘制矩形
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            }
+        } catch (e) {
+            console.error('解析坐标失败:', e);
+        }
+    }
+}
+</script>
+
+<style>
+.image-container {
+    display: inline-block;
+    position: relative;
+}
+
+.annotation-canvas {
+    pointer-events: none;
+}
+
+.thumbnail-container:hover {
+    border-color: #0d6efd;
+    background-color: #f0f8ff;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                模型管理
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">训练模型列表</h5>
+                
+                {% if models %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>模型名称</th>
+                                <th>训练时间</th>
+                                <th>训练数据量</th>
+                                <th>准确率</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for model in models %}
+                            <tr>
+                                <td>{{ model.model_name }}</td>
+                                <td>{{ model.training_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ model.training_data_size }}</td>
+                                <td>{{ "%.2f"|format(model.accuracy * 100) }}%</td>
+                                <td>
+                                    <a href="{{ url_for('evaluate', model_id=model.id) }}" class="btn btn-sm btn-primary">评估</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info" role="alert">
+                    <p>暂无训练模型，请先<a href="{{ url_for('train') }}">训练模型</a>。</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

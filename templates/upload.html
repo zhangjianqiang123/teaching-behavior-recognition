@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                数据上传
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">上传课堂教学数据</h5>
+                <p class="card-text">请上传课堂教学相关的视频或图片文件，系统将对其进行处理和分析。</p>
+                
+                <form method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">选择文件</label>
+                        <input class="form-control" type="file" id="file" name="file" accept="image/*,video/*" required>
+                        <div id="fileHelp" class="form-text">支持的文件格式：jpg、jpeg、png、mp4、avi、mov</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">上传并标注</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

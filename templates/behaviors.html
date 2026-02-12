@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>教学行为管理</h2>
+    
+    <!-- 添加新行为表单 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            添加新的教学行为
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <input type="hidden" name="action" value="add">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="key" class="form-label">英文键</label>
+                            <input type="text" class="form-control" id="key" name="key" placeholder="例如：lecturing" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="value" class="form-label">中文值</label>
+                            <input type="text" class="form-control" id="value" name="value" placeholder="例如：讲授" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3 align-self-end">
+                            <button type="submit" class="btn btn-primary">添加</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 教学行为列表 -->
+    <div class="card">
+        <div class="card-header">
+            教学行为列表
+        </div>
+        <div class="card-body">
+            {% if behaviors %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>英文键</th>
+                            <th>中文值</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for behavior in behaviors %}
+                        <tr>
+                            <td>{{ behavior.id }}</td>
+                            <td>{{ behavior.key }}</td>
+                            <td>{{ behavior.value }}</td>
+                            <td>{{ behavior.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>
+                                <!-- 编辑按钮 -->
+                                <button class="btn btn-sm btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#editModal-{{ behavior.id }}">编辑</button>
+                                
+                                <!-- 删除表单 -->
+                                <form method="post" class="d-inline">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="behavior_id" value="{{ behavior.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除这个教学行为吗？')">删除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        
+                        <!-- 编辑模态框 -->
+                        <div class="modal fade" id="editModal-{{ behavior.id }}" tabindex="-1" aria-labelledby="editModalLabel-{{ behavior.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel-{{ behavior.id }}">编辑教学行为</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post">
+                                            <input type="hidden" name="action" value="update">
+                                            <input type="hidden" name="behavior_id" value="{{ behavior.id }}">
+                                            <div class="mb-3">
+                                                <label for="key-{{ behavior.id }}" class="form-label">英文键</label>
+                                                <input type="text" class="form-control" id="key-{{ behavior.id }}" name="key" value="{{ behavior.key }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="value-{{ behavior.id }}" class="form-label">中文值</label>
+                                                <input type="text" class="form-control" id="value-{{ behavior.id }}" name="value" value="{{ behavior.value }}" required>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                <button type="submit" class="btn btn-primary">保存修改</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                暂无教学行为类型，请先添加。
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

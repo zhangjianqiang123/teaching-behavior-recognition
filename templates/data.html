@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">数据管理</h2>
+    
+    {% if data_files %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">数据文件列表</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>文件名</th>
+                            <th>文件类型</th>
+                            <th>上传时间</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data_file in data_files %}
+                        <tr class="align-middle">
+                            <td>{{ data_file.id }}</td>
+                            <td>{{ data_file.filename }}</td>
+                            <td>
+                                <span class="badge {% if data_file.file_type == 'video' %}bg-warning{% else %}bg-info{% endif %} text-dark">
+                                    {{ '视频' if data_file.file_type == 'video' else '图片' }}
+                                </span>
+                            </td>
+                            <td>{{ data_file.upload_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>
+                                <span class="badge {% if data_file.status == 'annotated' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ '已标注' if data_file.status == 'annotated' else '已上传' }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('annotate', file_id=data_file.id) }}" class="btn btn-sm btn-primary btn-rounded">标注</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        暂无数据文件，请先上传数据。
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                结果展示
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">模型识别结果分析</h5>
+                
+                {% if latest_model %}
+                <!-- 最新模型信息 -->
+                <div class="mb-4">
+                    <div class="alert alert-success" role="alert">
+                        <h6>最新模型信息</h6>
+                        <p><strong>模型名称：</strong>{{ latest_model.model_name }}</p>
+                        <p><strong>训练时间：</strong>{{ latest_model.training_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        <p><strong>训练数据量：</strong>{{ latest_model.training_data_size }}</p>
+                        <p><strong>准确率：</strong>{{ "%.2f"|format(latest_model.accuracy * 100) }}%</p>
+                    </div>
+                </div>
+                
+                <!-- 评估结果 -->
+                {% if evaluations %}
+                <div class="mb-4">
+                    <h6>评估结果</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>评估时间</th>
+                                    <th>准确率</th>
+                                    <th>正确预测/总预测</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for evaluation in evaluations %}
+                                <tr>
+                                    <td>{{ evaluation.evaluation_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>{{ "%.2f"|format(evaluation.accuracy * 100) }}%</td>
+                                    <td>{{ evaluation.correct_predictions }}/{{ evaluation.total_predictions }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info" role="alert">
+                    <p>暂无评估结果，请先<a href="{{ url_for('evaluate', model_id=latest_model.id) }}">评估模型</a>。</p>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="alert alert-info" role="alert">
+                    <p>暂无训练模型，请先<a href="{{ url_for('train') }}">训练模型</a>。</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

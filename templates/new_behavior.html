@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>新建教学行为</h5>
+                    <a href="{{ url_for('behaviors') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> 返回列表
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {% for message in messages %}
+                    {{ message }}
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+                {% endwith %}
+                
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="key" class="form-label">英文键 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="key" name="key" required placeholder="例如：lecturing">
+                        <div class="form-text">英文键用于系统内部识别，必须唯一</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="value" class="form-label">中文值 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="value" name="value" required placeholder="例如：讲授">
+                        <div class="form-text">中文值用于页面显示</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="行为的详细描述"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> 保存
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
