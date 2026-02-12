@@ -181,8 +181,8 @@ python app.py
 
 如果有任何问题或建议，欢迎通过以下方式联系：
 
-- 项目地址：https://github.com/your-username/teaching-behavior-recognition
-- Issues：https://github.com/your-username/teaching-behavior-recognition/issues
+- 985018505@qq.com
+- Issues：https://github.com/zhangjianqiang123/teaching-behavior-recognition/issues
 
 ## 致谢
 
